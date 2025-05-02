@@ -3,7 +3,6 @@ from scipy.integrate import cumulative_trapezoid
 import matplotlib.pyplot as plt
 import os
 
-
 def main():
     try:
         # 1. 获取数据文件路径（使用绝对路径）
