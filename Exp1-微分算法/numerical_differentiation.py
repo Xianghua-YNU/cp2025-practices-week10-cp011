@@ -45,27 +45,35 @@ def calculate_central_difference(x, f): # 需要参数x、f，使用中心差分
     return (f(x[2:])-f(x[:-2]))/(2*h)
 
 def richardson_derivative_all_orders(x, f, h, max_order=3):
-    # 需要参数x、f、h、max_order(默认值为3)，使用Richardson外推法计算不同阶数的导数值 计算数值导数
     """
-    参数：
-        x: 标量，要计算导数的点
-        f: 可调用函数，要求导的函数
-        h: 浮点数，初始步长
-        max_order: 整数，最大外推阶数
-    
-    返回：
-        列表，不同阶数计算的导数值
+    需要参数x(要求导的点)、f(函数f(x),可调用)、h(初始步长)、max_order(默认值为3)
+    使用Richardson外推法对中心差分法计算的导数进行精度提升，并返回各阶计算的导数值
     """
-    # 
+
     d = np.zeros((max_order + 1, max_order + 1), float)
-    d[:, 0] = (f(x + h / (2 ** np.arange(max_order + 1))) - f(x - h / (2 ** np.arange(max_order + 1)))) / (2 * h / (2 ** np.arange(max_order + 1)))
+    # 创建一个(max_order+1)×(max_order+1)的二维数组d，其中的每一个元素数据类型都是64位浮点数
+    d[:, 0] = (f(x+h/(2**np.arange(max_order+1))) - f(x-h/(2**np.arange(max_order+1))))/(2*h/(2**np.arange(max_order+1)))
+    '''
+    这里仍然套用中心差分公式f'(xi)≈[f(x+h)-f(x-h)]/2h，但是对每个步长h，我们依次减半以提升精确度
+    用h/2**np.arange(max_order+1)这一numpy数组来代替公式中的h
+    np.arange([start,]stop[,step])用于生成等差数列，并返回numpy数组
+    2**np.arange(max_order+1)用于生成数组2^n: [0,1,2,4,8,……,2^(max_order+1)]
+    最终结果赋值给二维数组d所有行的第0列，表示初始中心差分估计
+    '''
     for i in range(1, max_order + 1):
         for j in range(1, i + 1):
-            d[i, j] = d[i, j - 1] + (d[i, j - 1] - d[i - 1, j - 1]) / (4 ** j - 1)
-    return d[:, -1]  # 返回每一层的最高阶估计值
+            d[i, j] = d[i,j-1] + (d[i,j-1] - d[i-1,j-1])/(4**j-1)
+    '''
+    用Richardson外推法(通过组合不同精度(不同步长)下的导数估计，逐步消除误差项)，以逐步提高导数估计的精度
+    外推公式：d[i,j]=d[i,j−1]+(d[i,j−1]−d[i−1,j−1])/(4^j-1)。d[i,j] 表示第i层第j列的推算结果(即第j阶外推结果)
+    在第i行中，最多能计算第j阶外推值(最多只能推i阶)
+    递推完成后，精度最高的项为d[max_order + 1,max_order + 1]
+    '''
+    return d[:, -1]  # 返回每一行的最后一列（最高阶）估计值
 
 def create_comparison_plot(x, x_central, dy_central, dy_richardson, df_analytical):
-    """创建对比图，展示导数计算结果和误差分析
+    """
+    创建对比图，展示导数计算结果和误差分析
     
     参数：
         x: numpy数组，所有x坐标点
@@ -74,20 +82,21 @@ def create_comparison_plot(x, x_central, dy_central, dy_richardson, df_analytica
         dy_richardson: numpy数组，Richardson方法计算的导数值
         df_analytical: 可调用函数，解析导数函数
     """
-    df_true = df_analytical(x)
-    df_true_central = df_analytical(x_central)
+    df_true = df_analytical(x) # 所有x坐标点上的理论导数值
+    df_true_central = df_analytical(x_central) # 中心差分法使用的x坐标点上的理论导数值
     
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(12, 12))
+    # 生成2*2fig图像；子图坐标对象按顺序排列；尺寸：宽12英寸、高12英寸
 
-    # 1. 导数对比图
+    # 1. 绘制第一个子图ax1：导数对比图
     ax1.plot(x_central, dy_central, label='Central Difference', marker='o')
     ax1.plot(x_central, dy_richardson, label='Richardson (Order 3)', marker='s')
     ax1.plot(x_central, df_true_central, label='Analytical', linestyle='--')
-    ax1.set_title('Derivative Comparison')
-    ax1.legend()
-    ax1.grid()
+    ax1.set_title('Derivative Comparison') # 设置子图标题
+    ax1.legend()                           # 显示图例
+    ax1.grid()                             # 添加网格线
 
-    # 2. 误差分析图（对数坐标）
+    # 2. 绘制第二个子图ax2：误差分析图（对数坐标）
     error_central = np.abs(dy_central - df_true_central)
     error_richardson = np.abs(dy_richardson - df_true_central)
     ax2.plot(x_central, error_central, label='Central Error', marker='o')
