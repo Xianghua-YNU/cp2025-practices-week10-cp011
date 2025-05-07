@@ -149,7 +149,7 @@ def create_comparison_plot(x, x_central, dy_central, dy_richardson, df_analytica
 def main():
     """运行数值微分实验的主函数"""
 
-x = np.linspace(-2, 2, 1001) # 设置实验参数，在区间[−2,2]上生成1001个等间距的点，赋给坐标点数组x
+    x = np.linspace(-2, 2, 1001) # 设置实验参数，在区间[−2,2]上生成1001个等间距的点，赋给坐标点数组x
     h = x[1] - x[0] # 计算步长
     df_analytical = get_analytical_derivative() # 返回解析导数函数
     # 中心差分导数计算
