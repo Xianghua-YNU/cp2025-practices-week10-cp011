@@ -46,30 +46,28 @@ def calculate_central_difference(x, f): # 需要参数x、f，使用中心差分
 
 def richardson_derivative_all_orders(x, f, h, max_order=3):
     """
-    需要参数x(要求导的点)、f(函数f(x),可调用)、h(初始步长)、max_order(默认值为3)
-    使用Richardson外推法对中心差分法计算的导数进行精度提升，并返回各阶计算的导数值
+    参数：
+        x: 要求导的点（标量）
+        f: 被导函数，可调用
+        h: 初始步长
+        max_order: 最多做几阶外推
+    返回：
+        长度为 max_order 的 numpy 数组，
+        第 i 个元素是 R_{i+1,i+1}（即第 i+1 阶外推结果）
     """
-
+    # 构造 (max_order+1)×(max_order+1) 的表格
     d = np.zeros((max_order + 1, max_order + 1), float)
-    # 创建一个(max_order+1)×(max_order+1)的二维数组d，其中的每一个元素数据类型都是64位浮点数
-    d[:, 0] = (f(x+h/(2**np.arange(max_order+1))) - f(x-h/(2**np.arange(max_order+1))))/(2*h/(2**np.arange(max_order+1)))
-    '''
-    这里仍然套用中心差分公式f'(xi)≈[f(x+h)-f(x-h)]/2h，但是对每个步长h，我们依次减半以提升精确度
-    用h/2**np.arange(max_order+1)这一numpy数组来代替公式中的h
-    np.arange([start,]stop[,step])用于生成等差数列，并返回numpy数组
-    2**np.arange(max_order+1)用于生成数组2^n: [0,1,2,4,8,……,2^(max_order+1)]
-    最终结果赋值给二维数组d所有行的第0列，表示初始中心差分估计
-    '''
+    # 第 0 列：不同步长下的中心差分
+    hs = h / (2**np.arange(max_order+1))
+    d[:, 0] = (f(x + hs) - f(x - hs)) / (2 * hs)
+
+    # 外推填表：R[i,j] = R[i,j-1] + (R[i,j-1] - R[i-1,j-1])/(4**j - 1)
     for i in range(1, max_order + 1):
         for j in range(1, i + 1):
-            d[i, j] = d[i,j-1] + (d[i,j-1] - d[i-1,j-1])/(4**j-1)
-    '''
-    用Richardson外推法(通过组合不同精度(不同步长)下的导数估计，逐步消除误差项)，以逐步提高导数估计的精度
-    外推公式：d[i,j]=d[i,j−1]+(d[i,j−1]−d[i−1,j−1])/(4^j-1)。d[i,j] 表示第i层第j列的推算结果(即第j阶外推结果)
-    在第i行中，最多能计算第j阶外推值(最多只能推i阶)
-    递推完成后，精度最高的项为d[max_order + 1,max_order + 1]
-    '''
-    return d[:, -1]  # 返回每一行的最后一列（最高阶）估计值
+            d[i, j] = d[i, j-1] + (d[i, j-1] - d[i-1, j-1])/(4**j - 1)
+
+    # 只取对角线上的外推结果 R[1,1], R[2,2], …, R[max_order,max_order]
+    return d.diagonal()[1:max_order+1]
 
 def create_comparison_plot(x, x_central, dy_central, dy_richardson, df_analytical):
     """
