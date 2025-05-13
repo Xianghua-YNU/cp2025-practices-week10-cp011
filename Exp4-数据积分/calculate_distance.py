@@ -13,7 +13,7 @@ def main():
         data = np.loadtxt(data_file)
         t = data[:, 0]  # 时间列
         v = data[:, 1]  # 速度列
-        
+
         # 2. 计算总距离
         total_distance = np.trapz(v, t)
         print(f"总运行距离: {total_distance:.2f} 米")
