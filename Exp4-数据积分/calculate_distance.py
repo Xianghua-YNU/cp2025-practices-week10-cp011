@@ -45,4 +45,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-FAILED Exp4-数据积分/tests/test_calculate_distance.py::TestCalculateDistance::test_main_function_output - AssertionError: assert '总运行距离' in '错误：找不到数据文件 /home/runner/work/cp2025-practices-week10-cp011/cp2025-practices-week10-cp011/Velocities.txt\n请确保数据文件存在于项目目录中\n'
+
