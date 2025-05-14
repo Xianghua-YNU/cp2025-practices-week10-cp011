@@ -6,8 +6,12 @@ import os
 def main():
     try:
         # 1. 获取数据文件路径（使用绝对路径）
-        data_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        data_dir = os.path.dirname(os.path.abspath(__file__))
         data_file = os.path.join(data_dir, 'Velocities.txt')
+        
+        # 检查文件是否存在
+        if not os.path.exists(data_file):
+            raise FileNotFoundError(f"错误：找不到数据文件 {data_file}")
         
         # 2. 读取数据
         data = np.loadtxt(data_file)
@@ -39,9 +43,12 @@ def main():
         
         # 显示图表
         plt.show()
-    except FileNotFoundError:
-        print(f"错误：找不到数据文件 {data_file}")
+    except FileNotFoundError as e:
+        print(e)
         print("请确保数据文件存在于项目目录中")
+    except Exception as e:
+        print(f"发生错误: {e}")
 
 if __name__ == '__main__':
     main()
+
