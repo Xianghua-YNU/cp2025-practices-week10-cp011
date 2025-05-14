@@ -46,3 +46,19 @@ def main():
 if __name__ == '__main__':
     main()
 
+self = <test_calculate_distance.TestCalculateDistance object at 0x7f081ea19760>
+
+    def test_main_function_output(self):
+        """测试主函数是否能正常运行"""
+        # 重定向标准输出以捕获打印内容
+        import io
+        from contextlib import redirect_stdout
+    
+        f = io.StringIO()
+        with redirect_stdout(f):
+            calculate_distance()
+        output = f.getvalue()
+    
+        # 验证输出包含总距离信息
+>       assert "总运行距离" in output
+E       AssertionError: assert '总运行距离' in '错误：找不到数据文件 /home/runner/work/cp2025-practices-week10-cp011/cp2025-practices-week10-cp011/Velocities.txt\n请确保数据文件存在于项目目录中\n'
